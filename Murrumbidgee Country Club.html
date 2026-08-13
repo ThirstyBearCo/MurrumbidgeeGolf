@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071a11">
+<title>Murrumbidgee Country Club GPS</title>
+<style>
+:root{--bg:#071a11;--panel:#0d2a1c;--accent:#d7ff69;--text:#fff;--muted:#b7c7bd;--line:rgba(255,255,255,.15)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+body{background:linear-gradient(180deg,#071a11,#0b281a)}
+.app{height:100%;display:flex;flex-direction:column;padding:18px 92px 18px 18px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;min-height:58px}
+.hole-badge{display:flex;align-items:center;gap:20px;background:#0b2c1c;border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:10px 18px}
+.hole-mini{text-align:center;min-width:56px}
+.hole-mini .label{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
+.hole-mini .num{font-size:42px;font-weight:900;line-height:1}
+.sep{width:1px;height:48px;background:var(--line)}
+.status{font-size:14px;color:var(--muted);padding-top:8px}
+.course-name{margin-top:12px;font-size:16px;font-weight:900;letter-spacing:.04em;color:#fff}
+.tee-info{margin-top:8px;width:270px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.045)}
+.tee-row{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:start;padding:8px 11px;border-bottom:1px solid var(--line)}
+.tee-row:last-child{border-bottom:0}
+.tee-dot{width:14px;height:14px;border-radius:50%;margin-top:3px;border:1px solid rgba(255,255,255,.7)}
+.tee-dot.blue{background:#1747c7}.tee-dot.white{background:#fff}.tee-dot.red{background:#e52525}
+.tee-name{font-size:13px;font-weight:900;margin-bottom:3px}
+.tee-details{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12px;line-height:1.3}
+.tee-details strong{color:#fff}
+.main{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.distance-wrap{text-align:center}
+.distance-title{font-size:26px;font-weight:800;letter-spacing:.17em;color:var(--muted)}
+.distance-line{white-space:nowrap}
+.distance{font-size:clamp(135px,25vw,285px);font-weight:900;line-height:.84;letter-spacing:-.055em;color:var(--accent)}
+.unit{font-size:clamp(44px,7vw,82px);font-weight:900;color:var(--accent);margin-left:10px}
+.sub{margin-top:20px;color:var(--muted);font-size:16px}
+.readouts{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.readout{min-width:125px;border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:16px;padding:10px 16px}
+.rlabel{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.rvalue{margin-top:3px;font-size:23px;font-weight:900}
+
+
+
+
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{border:0;border-radius:18px;min-height:64px;font-size:21px;font-weight:800;background:#153c29;color:#fff;cursor:pointer}
+.btn.primary{background:var(--accent);color:#17200c}
+.tabs{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:40}
+.tab{width:74px;min-height:118px;border:1px solid rgba(255,255,255,.13);border-right:0;border-radius:16px 0 0 16px;background:#123621;color:#fff;font-size:16px;font-weight:900;letter-spacing:.045em;writing-mode:vertical-rl;transform:rotate(180deg);cursor:pointer}
+.tab.active{background:var(--accent);color:#17200c}
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:20;opacity:0;pointer-events:none;transition:opacity .35s ease}
+.dim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(68vw,820px);background:#07140e;z-index:30;transform:translateX(100%);transition:transform .36s cubic-bezier(.2,.8,.2,1);box-shadow:-22px 0 55px rgba(0,0,0,.48);display:flex;flex-direction:column}
+.drawer.open{transform:translateX(0)}
+.drawer-header{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 92px 14px 22px;border-bottom:1px solid var(--line);background:#0a2116}
+.drawer-title{font-size:25px;font-weight:900}
+.close{border:0;border-radius:12px;padding:10px 16px;background:#163d2a;color:#fff;font-size:19px;font-weight:800;cursor:pointer}
+.drawer-content{flex:1;min-height:0;overflow:auto;padding:18px}
+.tip-panel{max-width:720px;margin:20px auto;padding:30px;border:1px solid var(--line);border-radius:22px;background:#0d2a1c}
+.tip-panel h2{margin-top:0;font-size:32px}
+.tip-panel p{font-size:21px;line-height:1.55;color:#eaf0ec}
+@media(max-width:800px){
+ .app{padding-right:78px}.drawer{width:90vw}.tab{width:62px;min-height:100px;font-size:14px}
+ .hole-badge{padding:8px 12px}.hole-mini .num{font-size:34px}.tee-info{width:245px}
+ .distance{font-size:27vw}.readout{min-width:100px;padding:8px 11px}.rvalue{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="hole-badge">
+        <div class="hole-mini"><div class="label">HOLE</div><div class="num" id="holeNum">1</div></div>
+        <div class="sep"></div>
+        <div class="hole-mini"><div class="label">PAR</div><div class="num" id="parNum">4</div></div>
+      </div>
+      <div class="course-name">Murrumbidgee Country Club</div>
+      <div class="tee-info" id="teeInfo"></div>
+    </div>
+    <div class="status" id="gpsStatus">GPS: waiting for permission</div>
+  </div>
+
+  <main class="main">
+    <div class="distance-wrap">
+      <div class="distance-title">TO MIDDLE</div>
+      <div class="distance-line"><span class="distance" id="distance">--</span><span class="unit">m</span></div>
+      <div class="sub" id="accuracyText">Waiting for GPS location…</div>
+      <div class="readouts">
+        <div class="readout"><div class="rlabel">Front</div><div class="rvalue" id="frontDistance">-- m</div></div>
+        <div class="readout"><div class="rlabel">Middle</div><div class="rvalue" id="middleDistance">-- m</div></div>
+        <div class="readout"><div class="rlabel">Back</div><div class="rvalue" id="backDistance">-- m</div></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="nav">
+    <button class="btn" id="prevBtn">‹ Previous</button>
+    <button class="btn primary" id="nextBtn">Next ›</button>
+  </div>
+</div>
+
+<div class="dim" id="dim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawerTitle">Hole Tip</div>
+  </div>
+  <div class="drawer-content">
+    <div class="tip-panel">
+      <h2 id="tipHeading">Hole 1 Tip</h2>
+      <div id="tipText"></div>
+    </div>
+  </div>
+</div>
+<div class="tabs"><button class="tab" id="tipTab">Hole Tip</button></div>
+
+<script>
+const HOLES = {"1": {"front": [-35.38685626587905, 149.0360791088293], "middle": [-35.38690327990365, 149.0359496922508], "back": [-35.3869344403467, 149.03582161677673], "tip": ["A gentle starting hole requiring a drive down the right-hand side of the fairway to catch the slope and bring the ball back to the middle of the fairway.", "A downhill approach to a green sloping away from you requires a well struck short iron or wedge to hold the green.", "Be careful of the slopes when putting, as the ball can get away from you quickly down the slope."], "courses": {"blue": {"distance": 337, "par": 4, "index": "12/28"}, "white": {"distance": 324, "par": 4, "index": "12/28"}, "red": {"distance": 296, "par": 4, "index": "12/30"}}}, "2": {"front": [-35.38828424157401, 149.03291221033192], "middle": [-35.388353121357994, 149.03276804160456], "back": [-35.388415987776185, 149.0326439894438], "tip": ["A long Par 4, this hole requires a precise drive to avoid the water on the Right Side of the fairway.", "A mid to long iron approach should be aimed towards the left side of the green, as the surrounding slopes will bring the ball back to the middle, and the green side bunker on the Right of the green should be avoided."], "courses": {"blue": {"distance": 385, "par": 4, "index": "6/24"}, "white": {"distance": 362, "par": 4, "index": "6/24"}, "red": {"distance": 343, "par": 4, "index": "2/20"}}}, "3": {"front": [-35.392770879996206, 149.03051467404373], "middle": [-35.392865994391066, 149.030564294908], "back": [-35.39296329520765, 149.0306199507423], "tip": ["The first real scoring opportunity, this Par 5 is relatively short, however it plays deceptively uphill, so choosing the correct club in your approach is a must.", "After a good drive, your second should be played to the corner, with a relatively easy shot into the green.", "Club choice is important, you do not want to be putting or chipping from above the hole on this green."], "courses": {"blue": {"distance": 481, "par": 5, "index": "15/31"}, "white": {"distance": 445, "par": 5, "index": "15/31"}, "red": {"distance": 421, "par": 5, "index": "8/26"}}}, "4": {"front": [-35.39395209855, 149.03113739210744], "middle": [-35.3939956520519, 149.03124504454607], "back": [-35.39404375589233, 149.0313750248979], "tip": ["A short downhill Par 3 that plays deceptively tough. A short to mid iron will have to be well struck to hold the green.", "Your putting will be tested on this large green if you miss."], "courses": {"blue": {"distance": 146, "par": 3, "index": "18/36"}, "white": {"distance": 139, "par": 3, "index": "18/36"}, "red": {"distance": 127, "par": 3, "index": "16/34"}}}, "5": {"front": [-35.396642192878346, 149.03516853358187], "middle": [-35.396710545625595, 149.03530095742659], "back": [-35.396770298903114, 149.03542500771744], "tip": ["Murrumbidgee’s hardest hole – A long uphill Par 4.", "Most will struggle to reach the green in two shots, and if you leave yourself a downhill putt on this green, a three putt is not uncommon."], "courses": {"blue": {"distance": 411, "par": 4, "index": "1/19"}, "white": {"distance": 392, "par": 4, "index": "1/19"}, "red": {"distance": 315, "par": 4, "index": "4/22"}}}, "6": {"front": [-35.393186085922636, 149.0336077722549], "middle": [-35.39306090710638, 149.0336144777771], "back": [-35.392934088193726, 149.03364465262675], "tip": ["Another short par 5, this hole doglegs to the right and plays downhill.", "A straight drive is required to avoid the pond on the right and the fairway bunker on the left.", "Be careful of your approach and where you want to putt from, as the green has many slopes that can make putting difficult."], "courses": {"blue": {"distance": 464, "par": 5, "index": "16/29"}, "white": {"distance": 446, "par": 5, "index": "16/29"}, "red": {"distance": 405, "par": 5, "index": "14/32"}}}, "7": {"front": [-35.39024607521942, 149.03719393449856], "middle": [-35.39017063722348, 149.03732066886818], "back": [-35.39009301254477, 149.03742996888306], "tip": ["A Par 4 rolling gently to the Right, your drive should be played up the left side to avoid being blocked for your second shot into the green.", "A mid to long iron approach played to the middle of the green will give you a good chance at birdie."], "courses": {"blue": {"distance": 380, "par": 4, "index": "4/22"}, "white": {"distance": 369, "par": 4, "index": "4/22"}, "red": {"distance": 308, "par": 4, "index": "6/24"}}}, "8": {"front": [-35.387818120886635, 149.0379985201673], "middle": [-35.38773425769983, 149.0379060188126], "back": [-35.38764324328992, 149.03779916379943], "tip": ["Following the estate, this hole doglegs to the left.", "The uphill drive should be played to the Right side of the fairway to avoid being blocked out by the trees and to give you the best approach between the bunkers near the green.", "The bunker on the right-hand side should be avoided, as it will leave a tricky shot to a green sloping away from you."], "courses": {"blue": {"distance": 339, "par": 4, "index": "9/26"}, "white": {"distance": 334, "par": 4, "index": "9/26"}, "red": {"distance": 313, "par": 4, "index": "10/28"}}}, "9": {"front": [-35.386143635012516, 149.03917717941673], "middle": [-35.38608404690392, 149.0393548757551], "back": [-35.38599876475983, 149.03954799480846], "tip": ["Although it isn’t rated as so, this could be the toughest hole on the golf course.", "This tough Par 3 can play up to 200m in length, with a shot that needs to be hit over the dam, to a green surrounded by bunkers. Only the long hitters will be able to challenge a flag on the Right side of the green, others would do well to play to the front of the green leaving themselves a straight forward chip.", "Walking off with a par here is as good as a birdie.", "Many a good round has come undone on this tough hole."], "courses": {"blue": {"distance": 196, "par": 3, "index": "7/32"}, "white": {"distance": 186, "par": 3, "index": "7/32"}, "red": {"distance": 112, "par": 3, "index": "18/36"}}}, "10": {"front": [-35.383431232897145, 149.04403682416566], "middle": [-35.383356237522506, 149.04411932661748], "back": [-35.38327814948101, 149.044194242637], "tip": ["A drive up the right hand side of the fairway will leave a clear approach to a green guarded by mounds.", "A precise iron shot is required to find the green, and balls hit to the right will tend to end up further away from the green than you might think."], "courses": {"blue": {"distance": 382, "par": 4, "index": "8/30"}, "white": {"distance": 351, "par": 4, "index": "8/30"}, "red": {"distance": 277, "par": 4, "index": "15/33"}}}, "11": {"front": [-35.386908788461895, 149.04202985005602], "middle": [-35.387025551605625, 149.04201518953155], "back": [-35.38714966972268, 149.0419836130173], "tip": ["A long Par 5 that can only be attacked by the longest hitters this hole requires some course management to navigate it successfully.", "A good drive will leave a mid-iron to the corner, which should be played to the left of the big gum in the fairway.", "Another short iron approach needs to avoid the bunkers, and again a downhill putt will be tough to leave near the hole."], "courses": {"blue": {"distance": 520, "par": 5, "index": "10/25"}, "white": {"distance": 496, "par": 5, "index": "10/25"}, "red": {"distance": 479, "par": 5, "index": "1/19"}}}, "12": {"front": [-35.38432638923837, 149.0451740641278], "middle": [-35.384208715615664, 149.04523227618975], "back": [-35.384105994854835, 149.04530085478217], "tip": ["A dogleg to the left, your drive needs to be hit very straight to avoid the gum on the right, and to have a clear second shot.", "Your approach to the green should favour the right side of the green to avoid the bunker."], "courses": {"blue": {"distance": 403, "par": 4, "index": "5/23"}, "white": {"distance": 384, "par": 4, "index": "5/23"}, "red": {"distance": 305, "par": 4, "index": "7/25"}}}, "13": {"front": [-35.386214418507414, 149.04538760402454], "middle": [-35.386349793787346, 149.04535249623783], "back": [-35.38649677240545, 149.045335416774], "tip": ["Another long Par 3, this hole demands a well struck long iron. The green is protected by two large gums, and two greenside bunkers.", "You should be happy with any shot that finds the green."], "courses": {"blue": {"distance": 187, "par": 3, "index": "11/33"}, "white": {"distance": 173, "par": 4, "index": "11/33"}, "red": {"distance": 166, "par": 3, "index": "11/29"}}}, "14": {"front": [-35.38812970427369, 149.04091219344934], "middle": [-35.3881614929138, 149.04073947489206], "back": [-35.38816641290781, 149.04059061229918], "tip": ["A long downhill and straight forward Par 5.", "Your approach should favour the left side of the green to avoid the green side bunker, and use the mounding around the green to bring the ball back to the centre of the green"], "courses": {"blue": {"distance": 518, "par": 5, "index": "14/27"}, "white": {"distance": 505, "par": 5, "index": "14/27"}, "red": {"distance": 467, "par": 5, "index": "5/23"}}}, "15": {"front": [-35.390735119469376, 149.04332722015735], "middle": [-35.39082613039037, 149.0434452391271], "back": [-35.39092104166999, 149.0435760169044], "tip": ["A long uphill Par 4 that plays as a Par 5 for the ladies.", "A long straight drive is required to avoid the gumtrees bordering the fairway and have a clear shot to the green.", "A big green this will test your lag putting."], "courses": {"blue": {"distance": 403, "par": 4, "index": "2/20"}, "white": {"distance": 391, "par": 4, "index": "2/20"}, "red": {"distance": 388, "par": 5, "index": "9/27"}}}, "16": {"front": [-35.39014388196141, 149.0400197216453], "middle": [-35.390100976462776, 149.03989053871896], "back": [-35.39006457177939, 149.0397916579605], "tip": ["A short Par 4 that can be played numerous ways.", "A straight drive can lead to no more than a flick wedge onto the green, however playing off the downside brings its challenges.", "Otherwise laying up off the tee to leave a full shot in will test you, as leaving an uphill putt is imperative on this green."], "courses": {"blue": {"distance": 321, "par": 4, "index": "17/35"}, "white": {"distance": 303, "par": 4, "index": "17/35"}, "red": {"distance": 292, "par": 4, "index": "13/31"}}}, "17": {"front": [-35.38843578520906, 149.03936331651988], "middle": [-35.388321368072276, 149.03937448047648], "back": [-35.38821475195784, 149.0393904289859], "tip": ["A testing Par 3 which requires a well struck iron to avoid the greenside bunkers flanking the green.", "Playing slightly downhill, good club selection is needed, otherwise you can face a very lengthy putt on this large green."], "courses": {"blue": {"distance": 175, "par": 3, "index": "13/34"}, "white": {"distance": 156, "par": 3, "index": "13/34"}, "red": {"distance": 130, "par": 3, "index": "17/35"}}}, "18": {"front": [-35.38614618132181, 149.04126448530874], "middle": [-35.38600315581567, 149.04130355915686], "back": [-35.38587313240823, 149.041369745471], "tip": ["Murrumbidgee’s Signature hole will undoubtably leave you wanting more at the end of your round.", "A dogleg following the dam, a good drive is required to have a clear shot at the green.", "Balls straying too far left can catch the water.", "A mid iron approach to the green needs to avoid the deep bunkers bordering the front of the green."], "courses": {"blue": {"distance": 374, "par": 4, "index": "3/21"}, "white": {"distance": 360, "par": 4, "index": "3/21"}, "red": {"distance": 320, "par": 4, "index": "3/21"}}}};
+let currentHole = 1;
+let currentPosition = null;
+const $ = id => document.getElementById(id);
+
+function toRad(deg){return deg*Math.PI/180}
+function distanceMetres(lat1,lon1,lat2,lon2){
+ const R=6371000,p1=toRad(lat1),p2=toRad(lat2),dp=toRad(lat2-lat1),dl=toRad(lon2-lon1);
+ const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+ return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function teeRow(name,c){
+ return `<div class="tee-row"><span class="tee-dot ${name.toLowerCase()}"></span><div>
+ <div class="tee-name">${name} Course</div>
+ <div class="tee-details"><span>Distance <strong>${c.distance} m</strong></span><span>Par <strong>${c.par}</strong></span><span>Index <strong>${c.index}</strong></span></div>
+ </div></div>`;
+}
+function renderHole(){
+ const h=HOLES[currentHole];
+ $("holeNum").textContent=currentHole;
+ $("parNum").textContent=h.courses.blue?.par ?? "-";
+ $("teeInfo").innerHTML=["Blue","White","Red"].map(n=>teeRow(n,h.courses[n.toLowerCase()])).join("");
+ $("tipHeading").textContent=`Hole ${currentHole} Tip`;
+ $("tipText").innerHTML=h.tip.map(p=>`<p>${p}</p>`).join("");
+ renderDistances();
+}
+function renderDistances(){
+ const h=HOLES[currentHole];
+ if(!currentPosition){
+   $("distance").textContent="--";
+   $("frontDistance").textContent="-- m"; $("middleDistance").textContent="-- m"; $("backDistance").textContent="-- m";
+   return;
+ }
+ const f=Math.round(distanceMetres(currentPosition.latitude,currentPosition.longitude,h.front[0],h.front[1]));
+ const m=Math.round(distanceMetres(currentPosition.latitude,currentPosition.longitude,h.middle[0],h.middle[1]));
+ const b=Math.round(distanceMetres(currentPosition.latitude,currentPosition.longitude,h.back[0],h.back[1]));
+ $("distance").textContent=m;
+ $("frontDistance").textContent=f+" m"; $("middleDistance").textContent=m+" m"; $("backDistance").textContent=b+" m";
+ $("accuracyText").textContent="GPS accuracy ±"+Math.round(currentPosition.accuracy)+" m";
+}
+function changeHole(delta){
+ currentHole+=delta;
+ if(currentHole<1)currentHole=18;
+ if(currentHole>18)currentHole=1;
+ closeDrawer(); renderHole();
+}
+$("prevBtn").addEventListener("click",()=>changeHole(-1));
+$("nextBtn").addEventListener("click",()=>changeHole(1));
+
+if("geolocation" in navigator){
+ navigator.geolocation.watchPosition(
+  pos=>{
+   currentPosition={latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy};
+   $("gpsStatus").textContent="GPS: active"; renderDistances();
+  },
+  err=>{
+   $("gpsStatus").textContent="GPS: unavailable";
+   $("accuracyText").textContent=err.code===1?"Location permission denied. Enable location access for this site.":"Unable to get your GPS location.";
+  },
+  {enableHighAccuracy:true,maximumAge:1000,timeout:10000}
+ );
+}else $("gpsStatus").textContent="GPS: not supported";
+
+const drawer=$("drawer"),dim=$("dim"),tipTab=$("tipTab");
+function openTip(){drawer.classList.add("open");dim.classList.add("show");tipTab.classList.add("active")}
+function closeDrawer(){drawer.classList.remove("open");dim.classList.remove("show");tipTab.classList.remove("active")}
+tipTab.addEventListener("click", () => {
+  if (drawer.classList.contains("open")) {
+    closeDrawer();
+  } else {
+    openTip();
+  }
+});
+dim.addEventListener("click",closeDrawer);
+
+renderHole();
+</script>
+</body>
+</html>
